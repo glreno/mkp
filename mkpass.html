@@ -1,0 +1,122 @@
+<html>
+<body>
+
+<script>
+
+    var LOOKUP="23456789abcdefghijkmnpqrstuvwxyz";
+    var LOOKUP2="ABCDEGHJKPRSTXYZ";
+    var LOOKUP3=LOOKUP.substring(8);
+	var magic;
+	var magici;
+
+    function add(c, hash) {
+        hash = hash << 1;
+        var m = ( ( c^magic.charCodeAt(magici) ) & 0xf );
+		magici++;
+		if ( magici >= magic.length ) {
+			magici=0;
+		}
+		hash ^= m;
+		hash &= 0x3fffffff;
+//console.log(m.toString(16)+" -> "+hash.toString(16));
+		return hash;
+	}
+
+	function addString(s,hash) {
+		for(i=0;i<s.length;i++) {
+				var c = s.charCodeAt(i);
+				hash=add(c,hash);
+		}
+		return hash;
+	}
+
+	function report(hash) {
+		var hash2=hash;
+		var bufdot="";
+		var buf_="";
+		var buf="";
+		// Upper case - four bits
+		var c = (hash2&0xf);
+		hash2 >>= 4;
+		bufdot=bufdot.concat(LOOKUP2.charAt(c));
+		buf_=buf_.concat(LOOKUP2.charAt(c));
+		buf=buf.concat(LOOKUP2.charAt(c));
+		// Number - three bits
+		c = (hash2&0x7);
+		hash2 >>= 3;
+		bufdot=bufdot.concat(LOOKUP.charAt(c));
+		buf_=buf_.concat(LOOKUP.charAt(c));
+		buf=buf.concat(LOOKUP.charAt(c));
+		// Lower case - four bits
+		c = (hash2&0xf);
+		hash2 >>= 4;
+		bufdot=bufdot.concat(LOOKUP3.charAt(c));
+		buf_=buf_.concat(LOOKUP3.charAt(c));
+		buf=buf.concat(LOOKUP3.charAt(c));
+
+		bufdot=bufdot.concat(".");
+		buf_=buf_.concat("_");
+		// now the rest
+		for(var i=0;i<6;i++) {
+				c = (hash & 0x1f);
+				bufdot=bufdot.concat(LOOKUP.charAt(c));
+				buf_=buf_.concat(LOOKUP.charAt(c));
+				buf=buf.concat(LOOKUP.charAt(c));
+				if ( i==2 ) {
+						bufdot=bufdot.concat(".");
+						buf_=buf_.concat("_");
+				}
+				hash >>= 5;
+		}
+
+		document.getElementById("hashdot").value=bufdot;
+		document.getElementById("hash_").value=buf_;
+		document.getElementById("hash").value=buf;
+	}
+
+	function doHash() {
+		magici=0;
+		magic=document.getElementById("magic").value;
+		var s=document.getElementById("site").value;
+
+		var hash=0;
+		hash=addString(LOOKUP,hash);
+		hash=addString(s,hash);
+		report(hash);
+
+		document.getElementById("hash").select();
+
+	}
+</script>
+
+<form>
+<table>
+
+<tr><th>Magic</th><td>
+<input id="magic">
+</td></tr>
+
+<tr><th>Site</th><td>
+<input id="site">
+</td></tr>
+
+<tr>
+<td colspan=2>
+<button type="button" onclick="doHash()">Hash!</button>
+</td>
+</tr>
+
+<tr><th>Hash</th><td>
+<input id="hashdot" readonly="true">
+</td></tr>
+<tr><th>Hash</th><td>
+<input id="hash_" readonly="true">
+</td></tr>
+<tr><th>Hash</th><td>
+<input id="hash" readonly="true">
+</td></tr>
+
+</table>
+</form>
+</body>
+</html>
